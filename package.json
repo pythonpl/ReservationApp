@@ -4,8 +4,8 @@
   "description": "Ticket reservation and payment services",
   "main": "app.js",
   "scripts": {
-    "test": "jest"
-	"testW" : "jest --watchAll"
+    "test": "jest",
+    "testW": "jest --watchAll"
   },
   "repository": {
     "type": "git",
