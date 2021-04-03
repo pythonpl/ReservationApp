@@ -6,9 +6,17 @@ const ajv = new Ajv();
 const schema = {
     type: 'object',
     properties: {
-        amount: { type: 'number' },
-        token: { type: 'string' },
-        currency : {type : 'string'}
+        amount: {
+            type: 'number'
+        },
+        token: {
+            type: 'string',
+            minLength: 1
+        },
+        currency: {
+            type: 'string',
+            minLength: 1
+        }
     },
     required: ['amount', 'token']
 }
