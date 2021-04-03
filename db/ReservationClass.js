@@ -7,6 +7,7 @@ class Reservation {
         this.id = data.id;
         this.userID = data.userID;
         this.tickets = data.ticketID;
+        this.amount = data.amount;
         this.datetime = new Date();
         this.paid = false;
     }

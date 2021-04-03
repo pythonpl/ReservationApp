@@ -123,8 +123,8 @@ class Database {
                     throw new Error(ERRORS.TicketsAlreadyTaken);
 
                 const id = MockUtils.getUniqueID();
-                this.reservations[id] = new Reservation({ id: id, userID: data.userID, ticketID: data.ticketID });
                 const price = await this.reserveTickets(data.ticketID, id);
+                this.reservations[id] = new Reservation({ id: id, userID: data.userID, ticketID: data.ticketID, amount: price });
                 resolve({ id, price });
             } catch (e) {
                 reject(e);
