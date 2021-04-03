@@ -4,9 +4,10 @@
   "description": "Ticket reservation and payment services",
   "main": "app.js",
   "scripts": {
-    "test": "jest",
+    "start" : "node app.js",
     "testW": "jest --config=jest.config.js --watchAll",
-    "testapi" : "jest --config=jest.express.config.js"
+    "testapi" : "jest --config=./api_tests/regular/jest.api.regular.config.js --forceExit",
+    "teste2e" : "jest --config=./api_tests/e2e/jest.api.e2e.config.js --forceExit"
   },
   "repository": {
     "type": "git",

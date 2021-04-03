@@ -1,4 +1,4 @@
 module.exports = {
-        modulePathIgnorePatterns: ["<rootDir>/api"],
-        watchPathIgnorePatterns: ["<rootDir>/api"]
+        modulePathIgnorePatterns: ["<rootDir>/api_tests"],
+        watchPathIgnorePatterns: ["<rootDir>/api_tests"]
 }

@@ -19,12 +19,13 @@ app.use('/', paymentRoutes.router);
 
 
 
+
 /**
  *  Route used for testing ONLY
  *  Resets db mock.
  */
 
-app.use('/reset', (req, res)=>{
+ app.use('/reset', (req, res)=>{
     const Ticket = require('./db/TicketClass');
     const Reservation = require('./db/ReservationClass');
     const EMPTY_RESERVATION = '_000000';

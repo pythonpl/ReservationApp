@@ -1,5 +1,6 @@
 const verifyPaymentRequest = require('./PaymentRequestVerify');
 const PaymentGateway = require('./gateway/PaymentGateway');
+const ERRORS = require('../utils/commonErrors');
 const db = require('../db/dbAPI');
 
 const express = require('express');
