@@ -9,9 +9,6 @@ class PaymentGateway {
      */
     charge(requestData) {
         return new Promise((resolve, reject) => {
-            if(!validate(requestData))
-                return reject(new Error(ERRORS.PaymentDataIncomplete));
-
             switch (requestData.token) {
                 case 'card_error':
                     return reject(new Error(ERRORS.PaymentDeclined));

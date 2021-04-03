@@ -1,5 +1,5 @@
 const PaymentGateway = require('./PaymentGateway');
-const ERRORS = require('../utils/commonErrors')
+const ERRORS = require('../utils/commonErrors');
 
 describe('Payment Gateway tests', ()=>{
 
@@ -41,14 +41,6 @@ describe('Payment Gateway tests', ()=>{
         const result = PaymentGateway.charge(inputData);
 
         await expect(result).resolves.toStrictEqual({'amount' : 12, 'currency' : 'CHF'});
-    });
-
-    test('Should decline the payment, and throw PaymentError error, due to incomplete request', async () => {
-        const inputData = { amount: 25 };
-
-        const result = PaymentGateway.charge(inputData);
-
-        await expect(result).rejects.toThrowError(ERRORS.PaymentDataIncomplete);
     });
     
 });
