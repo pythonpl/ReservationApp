@@ -3,12 +3,12 @@ const ERRORS = require('../utils/commonErrors')
 
 describe('database API tests', () => {
 
-    describe('tests of *existance* methods', () => {
+    describe('tests of *Existence* methods', () => {
 
         test('UserID _4a12pz should be in database, resolves with true', async () => {
             const userID = '_4a12pz';
 
-            const result = db.checkUserExistance(userID);
+            const result = db.checkUserExistence(userID);
 
             await expect(result).resolves.toBe(true);
         });
@@ -17,7 +17,7 @@ describe('database API tests', () => {
         test('UserID _123456 should not be in database, resolves with false', async () => {
             const userID = '_123456';
 
-            const result = db.checkUserExistance(userID);
+            const result = db.checkUserExistence(userID);
 
             await expect(result).resolves.toBe(false);
         });
@@ -26,7 +26,7 @@ describe('database API tests', () => {
         test('TicketID _j8w6y6 should be in database, resolves with true', async () => {
             const ticketID = '_j8w6y6';
 
-            const result = db.checkTicketExistance(ticketID);
+            const result = db.checkTicketExistence(ticketID);
 
             await expect(result).resolves.toBe(true);
         });
@@ -35,7 +35,7 @@ describe('database API tests', () => {
         test('TicketID _123456 should not be in database, resolves with false', async () => {
             const ticketID = '_123456';
 
-            const result = db.checkTicketExistance(ticketID);
+            const result = db.checkTicketExistence(ticketID);
 
             await expect(result).resolves.toBe(false);
         });

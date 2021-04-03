@@ -44,7 +44,7 @@ class Database {
      * @param {String} userID 
      * @returns {Promise} resolves true if user exists, false if user does not exist
      */
-    checkUserExistance(userID) {
+    checkUserExistence(userID) {
         return new Promise((resolve) => {
             resolve(this.users.hasOwnProperty(userID));
         })
@@ -55,7 +55,7 @@ class Database {
      * @param {String} reservationID 
      * @returns {Promise} resolves true if user exists, false if user does not exist
      */
-    checkReservationExistance(reservationID) {
+    checkReservationExistence(reservationID) {
         return new Promise((resolve) => {
             resolve(this.reservations.hasOwnProperty(reservationID));
         })
@@ -66,7 +66,7 @@ class Database {
      * @param {String} ticketID 
      * @returns {Promise} resolves true if ticket exists, false if ticket does not exist
      */
-    checkTicketExistance(ticketID) {
+    checkTicketExistence(ticketID) {
         return new Promise((resolve) => {
             resolve(this.tickets.hasOwnProperty(ticketID));
         })
@@ -79,7 +79,7 @@ class Database {
      */
     isTicketFree(ticketID) {
         return new Promise(async (resolve, reject) => {
-            if (await this.checkTicketExistance(ticketID)) {
+            if (await this.checkTicketExistence(ticketID)) {
                 resolve(this.tickets[ticketID].reservationID === EMPTY_RESERVATION);
             } else {
                 reject(new Error(ERRORS.TicketDataInvalid));
