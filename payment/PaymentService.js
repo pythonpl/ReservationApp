@@ -28,22 +28,43 @@ exports.validatePaymentRequest = async function (req, res, next) {
     }
 }
 
-exports.chargePayment = async function (req, res, next) {
-    let success = false;
+exports.beginPayment = async function (req, res, next) {
     try {
-        const paymentInfo = {
+        res.locals.paymentInfo = {
             amount: await db.beginPayment(res.locals.paymentRequest),
             token: res.locals.paymentRequest.token,
             currency: 'EUR'
         }
-        const response = await PaymentGateway.charge(paymentInfo)
-        success = true;
-        return res.json({ status: 'success', reservationID: res.locals.paymentRequest.reservationID, amount: response.amount, currency: response.currency });
+        return next();
     } catch (e) {
         return res.json(e.message);
-    } finally {
-        await db.endPayment(res.locals.paymentRequest, success);
     }
 }
 
-exports.router = router.post('/pay', this.handlePaymentRequest, this.validatePaymentRequest, this.chargePayment);
+
+exports.chargePayment = async function (req, res, next) {
+    try {
+        res.locals.response = await PaymentGateway.charge(res.locals.paymentInfo);
+        await db.endPayment(res.locals.paymentRequest, true);
+        
+        return next();
+    } catch (e) {
+        await db.endPayment(res.locals.paymentRequest, false);
+        return res.json(e.message);
+    }
+}
+
+exports.endTransaction = async function (req, res, next) {
+    const feedback = {
+        status: 'success',
+        reservationID: res.locals.paymentRequest.reservationID,
+        amount: res.locals.response.amount,
+        currency: res.locals.response.currency
+    }
+
+    return res.json(feedback);
+}
+
+
+
+exports.router = router.post('/pay', this.handlePaymentRequest, this.validatePaymentRequest, this.beginPayment, this.chargePayment, this.endTransaction);

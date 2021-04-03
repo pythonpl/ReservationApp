@@ -10,7 +10,7 @@ afterEach(async () => {
     return await request(URL).get('/reset');   
 });
 
-describe('POST /reserve', () => {
+describe('INTEGRATION TESTS POST /reserve', () => {
 
     test('Should reject request with error ReservationRequestInvalid', async ()=>{
 
@@ -70,7 +70,7 @@ describe('POST /reserve', () => {
 })
 
 
-describe('POST /pay', () => {
+describe('INTEGRATION TESTS POST /pay', () => {
 
     test('Should return success', async ()=>{
 
