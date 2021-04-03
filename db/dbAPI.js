@@ -1,4 +1,6 @@
 const ERRORS = require('../utils/commonErrors');
+const Ticket = require('./TicketClass');
+const Reservation = require('./ReservationClass');
 
 
 /** 
@@ -16,11 +18,17 @@ class Database {
      * TABLES: reservations, users, tickets
      * With some example initial values for testing purposes
      */
-    reservations = { '_4kwcny': { datetime: '2020-04-01 11:30', tickets: ['_6c1iu1'], paid: false } };
     users = { '_4a12pz': {}, '_5s73fs': {} };
-    // We consider tickets as unique objects.
-    tickets = { '_j8w6y6': { price: 25, reservation: EMPTY_RESERVATION }, '_6c1iu1': { price: 25, reservation: '_4kwcny' } }
 
+    // Reservation table: each reservation belongs to user and contains array of ticketids
+    reservations = {
+        '_4kwcny': new Reservation({ userID: '_4a12pz', ticketID: ['_6c1iu1'], id: '_4kwcny' })
+    };
+    // We consider tickets as unique objects.
+    tickets = {
+        '_j8w6y6': new Ticket({ price: 25, reservationID: EMPTY_RESERVATION, id: '_j8w6y6' }),
+        '_6c1iu1': new Ticket({ price: 25, reservationID: '_4kwcny', id: '_6c1iu1' })
+    }
 
 
 
@@ -72,7 +80,7 @@ class Database {
     isTicketFree(ticketID) {
         return new Promise(async (resolve, reject) => {
             if (await this.checkTicketExistance(ticketID)) {
-                resolve(this.tickets[ticketID].reservation === EMPTY_RESERVATION);
+                resolve(this.tickets[ticketID].reservationID === EMPTY_RESERVATION);
             } else {
                 reject(new Error(ERRORS.TicketDataInvalid));
             }
