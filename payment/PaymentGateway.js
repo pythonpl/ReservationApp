@@ -1,6 +1,10 @@
 const ERRORS = require('../utils/commonErrors');
 
 class PaymentGateway {
+    /**
+     * Accepts or rejects payment with provided token.
+     * Returns charged amount or error
+     */
     charge({amount, token, currency = 'EUR'}) {
         return new Promise((resolve, reject) => {
             switch (token) {
