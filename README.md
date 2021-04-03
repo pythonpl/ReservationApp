@@ -1,3 +1,3 @@
 # ReservationApp
 
-Ticket resrvation and payment services
+Ticket reservation and payment services

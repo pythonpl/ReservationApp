@@ -1,7 +1,7 @@
 {
   "name": "reservationapp",
   "version": "1.0.0",
-  "description": "Ticket resrvation and payment services",
+  "description": "Ticket reservation and payment services",
   "main": "app.js",
   "scripts": {
     "test": "jest"
