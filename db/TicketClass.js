@@ -12,6 +12,7 @@ class Ticket {
     setReservation(reservationID){
         this.reservationID = reservationID;
     }
+
 }
 
 module.exports = Ticket;

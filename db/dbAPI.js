@@ -14,7 +14,6 @@ const { Mutex } = require('async-mutex');
 // Empty reservation ID - means the ticket with such number is so far free.
 const EMPTY_RESERVATION = '_000000';
 
-
 class Database {
     /**
      * TABLES: reservations, users, tickets
@@ -26,12 +25,15 @@ class Database {
     reservations = {
         '_4kwcny': new Reservation({ userID: '_4a12pz', ticketID: ['_6c1iu1'], amount: 15, id: '_4kwcny' })
     };
+
     // We consider tickets as unique objects.
     tickets = {
         '_j8w6y6': new Ticket({ price: 25, reservationID: EMPTY_RESERVATION, id: '_j8w6y6' }),
         '_gd74ae': new Ticket({ price: 20, reservationID: EMPTY_RESERVATION, id: '_gd74ae' }),
         '_6c1iu1': new Ticket({ price: 15, reservationID: '_4kwcny', id: '_6c1iu1' })
-    }
+    };
+
+    soldTickets = {};
 
     constructor() {
         this.reservationMutex = new Mutex();
@@ -59,12 +61,23 @@ class Database {
     /**
      * Checks if reservation with provided reservationID is in the database
      * @param {String} reservationID 
-     * @returns {Promise} resolves true if reservation exist and it's not paid yet
+     * @returns {Promise} resolves true if reservation exists
      */
     checkReservationExistence(reservationID) {
         return new Promise((resolve) => {
-            resolve(this.reservations.hasOwnProperty(reservationID) && this.reservations[reservationID].isWaitingForPayment());
-        })
+            resolve(this.reservations.hasOwnProperty(reservationID));
+        });
+    }
+
+    /**
+     * Checks if reservation with provided reservationID awaits payment
+     * @param {String} reservationID 
+     * @returns {Promise} resolves true if it's not paid yet
+     */
+    checkIfReservationAwaitsPayment(reservationID) {
+        return new Promise((resolve) => {
+            resolve(this.reservations[reservationID].isWaitingForPayment());
+        });
     }
 
     /**
@@ -164,7 +177,7 @@ class Database {
                 if (this.reservations[data.reservationID].isLockedForThePayment())
                     throw new Error(ERRORS.PaymentStarted);
 
-                if (!this.reservations[data.reservationID].isStillValid())
+                if (!this.reservations[data.reservationID].isNotExpired())
                     throw new Error(ERRORS.ReservationExired);
 
                 this.reservations[data.reservationID].beginPayment();
@@ -195,6 +208,65 @@ class Database {
             } finally {
                 release();
             }
+        });
+    }
+
+
+    /**
+     * Checks if reservation is still valid, and updates tickets state if not
+     * @param {String} reservationID 
+     * @returns {Promise} resolves true if tickets that belong to the reservation were modified, false if reservation is still valid
+     */
+    updateReservationValidity(reservationID) {
+        return new Promise(async (resolve, reject) => {
+            if (!(await this.checkReservationExistence(reservationID)))
+                resolve(false);
+
+
+            const release = await this.changeReservationStatusMutex.acquire();
+            try {
+                if (this.reservations[reservationID].isCompleted())
+                    resolve(false);
+
+                if (this.reservations[reservationID].isLockedForThePayment())
+                    resolve(false);
+
+                if (this.reservations[reservationID].isNotExpired())
+                    resolve(false);
+
+                for (let ticket in this.reservations[reservationID].ticketID) {
+                    this.tickets[ticket].setReservation(EMPTY_RESERVATION);
+                }
+                resolve(true);
+            } finally {
+                release();
+            }
+        });
+    }
+
+
+    /**
+     * Finds free tickets in database
+     * @returns {Promise} resolves array of free ticket ids
+     */
+    findFreeTickets() {
+        return new Promise(async (resolve, reject) => {
+            const freeTickets = [];
+
+
+            for (let ticketid of Object.getOwnPropertyNames(this.tickets)) {
+                const ticket = this.tickets[ticketid];
+                if (ticket.reservationID === EMPTY_RESERVATION) {
+                    freeTickets.push(ticket.id);
+                    continue;
+                }
+
+                if (await this.updateReservationValidity(ticket.reservationID)) {
+                    freeTickets.push(ticket.id);
+                }
+            }
+
+            resolve(freeTickets);
         });
     }
 

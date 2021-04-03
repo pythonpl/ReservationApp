@@ -17,6 +17,10 @@ app.use('/', reservationRoutes.router);
 app.use('/', paymentRoutes.router);
 
 
+app.get('/freeTickets', async(req, res)=>{
+    res.json(await db.findFreeTickets());
+});
+
 
 
 
@@ -39,6 +43,7 @@ app.use('/', paymentRoutes.router);
         '_gd74ae': new Ticket({ price: 20, reservationID: EMPTY_RESERVATION, id: '_gd74ae' }),
         '_6c1iu1': new Ticket({ price: 15, reservationID: '_4kwcny', id: '_6c1iu1' })
     }
+    db.soldTickets = {};
 
     return res.send('OK');
 });
@@ -47,5 +52,5 @@ app.use('/', paymentRoutes.router);
 
 
 app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+    //console.log(`Example app listening at http://localhost:${port}`);
 });

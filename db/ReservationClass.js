@@ -18,18 +18,18 @@ class Reservation {
     }
 
     isWaitingForPayment(){
-        return this.paymentStatus == PAYMENT_STATUS.FAILED || this.paymentStatus == PAYMENT_STATUS.PENDING;
+        return this.paymentStatus === PAYMENT_STATUS.FAILED || this.paymentStatus === PAYMENT_STATUS.PENDING;
     }
 
     isLockedForThePayment(){
-        return this.paymentStatus == PAYMENT_STATUS.STARTED;
+        return this.paymentStatus === PAYMENT_STATUS.STARTED;
     }
 
     isCompleted(){
-        return this.paymentStatus == PAYMENT_STATUS.SUCCESSFULL;
+        return this.paymentStatus === PAYMENT_STATUS.SUCCESSFULL;
     }
 
-    isStillValid(){
+    isNotExpired(){
         return (new Date() - this.datetime) < RESERVATION_EXPIRY_TIME;
     }
 
