@@ -3,7 +3,7 @@ const validate = require('./ReservationRequestSchema');
 /** 
  * Tests of data incoming to a reservation service. They should match the schema
  */
-describe('Reservation request validation', () => {
+describe('Reservation request schema validation', () => {
 
     test('Should accept properly defined input data', () => {
         const inputData = { userID: '_123456', ticketID: ['_123456'] };

@@ -9,11 +9,11 @@ const schema = {
         amount: {
             type: 'number'
         },
-        token: {
+        currency: {
             type: 'string',
             minLength: 1
         },
-        currency: {
+        token: {
             type: 'string',
             minLength: 1
         }

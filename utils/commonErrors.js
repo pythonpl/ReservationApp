@@ -12,12 +12,16 @@ module.exports = {
      */
     TicketDataInvalid: 'The ticketID is invalid.',
     TicketsAlreadyTaken: 'Chosen tickets are taken.',
+    ReservationDataInvalid: 'The reservation data is invalid.',
+    ReservationExired : 'The reservation has expired.',
+    PaymentStarted : 'Payment already started.',
 
     /**
      * Request errors definitions
      */
     ReservationRequestInvalid : 'Reservation request has invalid syntax.',
-    RequestInvalidData : 'Request contains invalid data.'
+    PaymentRequestInvalid : 'Payment request has invalid syntax.',
+    RequestInvalidData : 'Request contains invalid data.',
 
 
 }

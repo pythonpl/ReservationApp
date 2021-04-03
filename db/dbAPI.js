@@ -24,7 +24,7 @@ class Database {
 
     // Reservation table: each reservation belongs to user and contains array of ticketids
     reservations = {
-        '_4kwcny': new Reservation({ userID: '_4a12pz', ticketID: ['_6c1iu1'], id: '_4kwcny' })
+        '_4kwcny': new Reservation({ userID: '_4a12pz', ticketID: ['_6c1iu1'], amount: 15, id: '_4kwcny' })
     };
     // We consider tickets as unique objects.
     tickets = {
@@ -35,6 +35,7 @@ class Database {
 
     constructor() {
         this.reservationMutex = new Mutex();
+        this.changeReservationStatusMutex = new Mutex();
     }
 
     /**
@@ -58,11 +59,11 @@ class Database {
     /**
      * Checks if reservation with provided reservationID is in the database
      * @param {String} reservationID 
-     * @returns {Promise} resolves true if user exists, false if user does not exist
+     * @returns {Promise} resolves true if reservation exist and it's not paid yet
      */
     checkReservationExistence(reservationID) {
         return new Promise((resolve) => {
-            resolve(this.reservations.hasOwnProperty(reservationID));
+            resolve(this.reservations.hasOwnProperty(reservationID) && this.reservations[reservationID].isWaitingForPayment());
         })
     }
 
@@ -74,6 +75,22 @@ class Database {
     checkTicketExistence(ticketID) {
         return new Promise((resolve) => {
             resolve(this.tickets.hasOwnProperty(ticketID));
+        })
+    }
+
+
+    /**
+     * Checks if reservation exists, and belongs to user
+     * @param {Object} data matches PaymentRequestSchema
+     * @returns {Promise} resolves true if reservation belongs to user, false if not, rejects when reservation does not exist
+     */
+    checkReservationBelongsToUser(data) {
+        return new Promise(async (resolve, reject) => {
+            if (await this.checkReservationExistence(data.reservationID)) {
+                resolve(this.reservations[data.reservationID].userID === data.userID);
+            } else {
+                reject(new Error(ERRORS.ReservationDataInvalid));
+            }
         })
     }
 
@@ -111,7 +128,7 @@ class Database {
 
     /**
      * Places new Reservation
-     * @param {Object} reservation object created passed by ReservationService
+     * @param {Object} reservation matches PaymentRequestSchema
      * @returns {Promise} resolves with price and reservationID if everything went good, rejects if there is a problem
      */
     placeReservation(data) {
@@ -125,7 +142,7 @@ class Database {
                 const id = MockUtils.getUniqueID();
                 const price = await this.reserveTickets(data.ticketID, id);
                 this.reservations[id] = new Reservation({ id: id, userID: data.userID, ticketID: data.ticketID, amount: price });
-                
+
                 resolve({ id, price });
             } catch (e) {
                 reject(e);
@@ -133,6 +150,52 @@ class Database {
                 release();
             }
         })
+    }
+
+    /**  
+     * Checks if reservation is valid, and locks it to charge user
+     * @param {Object} data matches PaymentRequestSchema
+     * @returns {Promise} resolves reservation price if reservation is valid and has been locked, rejects with error otherwise
+     */
+    beginPayment(data) {
+        return new Promise(async (resolve, reject) => {
+            const release = await this.changeReservationStatusMutex.acquire();
+            try {
+                if (this.reservations[data.reservationID].isLockedForThePayment())
+                    throw new Error(ERRORS.PaymentStarted);
+
+                if (!this.reservations[data.reservationID].isStillValid())
+                    throw new Error(ERRORS.ReservationExired);
+
+                this.reservations[data.reservationID].beginPayment();
+                resolve(this.reservations[data.reservationID].amount);
+            } catch (e) {
+                reject(e);
+            } finally {
+                release();
+            }
+        });
+    }
+
+
+    /**  
+     * Changes Payment status of the reservation
+     * @param {Object} data matches PaymentRequestSchema
+     * @param {Boolean} success true if payment ended with success, false otherwise
+     * @returns {Promise} resolves true if reservation has changed successfully, rejects with error otherwise
+     */
+    endPayment(data, success) {
+        return new Promise(async (resolve, reject) => {
+            const release = await this.changeReservationStatusMutex.acquire();
+            try {
+                this.reservations[data.reservationID].endPayment(success);
+                resolve(true);
+            } catch (e) {
+                reject(e);
+            } finally {
+                release();
+            }
+        });
     }
 
 }

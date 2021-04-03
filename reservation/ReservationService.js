@@ -1,4 +1,4 @@
-const verifyReservationRequest = require('./ReservationVerify');
+const verifyReservationRequest = require('./ReservationRequestVerify');
 const db = require('../db/dbAPI');
 
 const express = require('express');
@@ -13,7 +13,7 @@ exports.handleReservationRequest = function (req, res, next) {
     return next();
 }
 
-exports.validateRequest = async function (req, res, next) {
+exports.validateReservationRequest = async function (req, res, next) {
     try {
         if (await verifyReservationRequest(res.locals.reservationRequest)) {
             return next()
@@ -34,6 +34,6 @@ exports.createNewReservation = async function (req, res, next) {
     }
 }
 
-exports.router = router.post('/reserve', this.handleReservationRequest, this.validateRequest, this.createNewReservation);
+exports.router = router.post('/reserve', this.handleReservationRequest, this.validateReservationRequest, this.createNewReservation);
 
 
