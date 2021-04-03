@@ -42,7 +42,7 @@ class Database {
      * These method can be replaced to a real database connector if needed
      */
 
-    
+
     /**
      * Checks if user with provided userID is in the database
      * @param {String} userID 
@@ -125,7 +125,6 @@ class Database {
                 this.reservations[id] = new Reservation({ id: id, userID: data.userID, ticketID: data.ticketID });
                 const price = await this.reserveTickets(data.ticketID, id);
                 resolve({ id, price });
-
             } catch (e) {
                 reject(e);
             } finally {
