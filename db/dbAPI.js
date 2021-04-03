@@ -33,7 +33,7 @@ class Database {
 
     /**
      * Checks if user with provided userID is in the database
-     * @param {integer} userID 
+     * @param {String} userID 
      * @returns {Promise} resolves true if user exists, false if user does not exist
      */
     checkUserExistance(userID) {
@@ -44,7 +44,7 @@ class Database {
 
     /**
      * Checks if reservation with provided reservationID is in the database
-     * @param {Symbol} reservationID 
+     * @param {String} reservationID 
      * @returns {Promise} resolves true if user exists, false if user does not exist
      */
     checkReservationExistance(reservationID) {
@@ -55,7 +55,7 @@ class Database {
 
     /**
      * Checks if ticket with provided ticketID is in the database
-     * @param {integer} ticketID 
+     * @param {String} ticketID 
      * @returns {Promise} resolves true if ticket exists, false if ticket does not exist
      */
     checkTicketExistance(ticketID) {
@@ -66,7 +66,7 @@ class Database {
 
     /**
      * Checks if ticket with provided ticketID is free or taken
-     * @param {integer} ticketID 
+     * @param {String} ticketID 
      * @returns {Promise} resolves true if ticket is free
      */
     isTicketFree(ticketID) {
