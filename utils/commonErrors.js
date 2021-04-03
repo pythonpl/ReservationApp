@@ -10,5 +10,14 @@ module.exports = {
     /**
      * DB errors definitions
      */
-    TicketDataInvalid: 'The ticketID is invalid.'
+    TicketDataInvalid: 'The ticketID is invalid.',
+    TicketsAlreadyTaken: 'Chosen tickets are taken.',
+
+    /**
+     * Request errors definitions
+     */
+    ReservationRequestInvalid : 'Reservation request has invalid syntax.',
+    RequestInvalidData : 'Request contains invalid data.'
+
+
 }
