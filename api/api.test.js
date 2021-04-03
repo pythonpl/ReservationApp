@@ -30,7 +30,7 @@ describe('POST /reserve', () => {
         await request(URL).post(route).send(inputData).expect(expected);
     })
 
-    test('Should reserve ticket for the first time, and not for the second', async ()=>{
+    test('Should return {id, price} for the first time, and errror TicketsAlreadyTaken for the second', async ()=>{
 
         const route = '/reserve';
         
@@ -41,7 +41,7 @@ describe('POST /reserve', () => {
             expect(res.body).toHaveProperty('price', 25);
         }).then(async()=>{
             await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-                expect(res.body).toBe(JSON.stringify(ERRORS.TicketsAlreadyTaken));
+                expect(res.body).toBe(ERRORS.TicketsAlreadyTaken);
             });
         });
 

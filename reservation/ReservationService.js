@@ -5,7 +5,7 @@ const express = require('express');
 const router = express.Router();
 
 // EXPRESS HANDLER MIDDLEWARE
-exports.handleReservationRequest = async function (req, res, next) {
+exports.handleReservationRequest = function (req, res, next) {
     res.locals.reservationRequest = {
         userID: req.body.userID,
         ticketID: req.body.ticketID
@@ -30,7 +30,7 @@ exports.createNewReservation = async function (req, res, next) {
         const result = await db.placeReservation(res.locals.reservationRequest);
         return res.json(result)
     } catch (e) {
-        return res.json(JSON.stringify(e.message));
+        return res.json(e.message);
     }
 }
 
