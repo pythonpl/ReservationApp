@@ -29,7 +29,8 @@ class Database {
     // We consider tickets as unique objects.
     tickets = {
         '_j8w6y6': new Ticket({ price: 25, reservationID: EMPTY_RESERVATION, id: '_j8w6y6' }),
-        '_6c1iu1': new Ticket({ price: 25, reservationID: '_4kwcny', id: '_6c1iu1' })
+        '_gd74ae': new Ticket({ price: 20, reservationID: EMPTY_RESERVATION, id: '_gd74ae' }),
+        '_6c1iu1': new Ticket({ price: 15, reservationID: '_4kwcny', id: '_6c1iu1' })
     }
 
     constructor() {

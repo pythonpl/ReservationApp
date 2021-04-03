@@ -1,5 +1,5 @@
 const PaymentGateway = require('./PaymentGateway');
-const ERRORS = require('../utils/commonErrors');
+const ERRORS = require('../../utils/commonErrors');
 
 describe('Payment Gateway tests', ()=>{
 

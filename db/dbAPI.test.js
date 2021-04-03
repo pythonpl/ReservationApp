@@ -90,13 +90,13 @@ describe('database API tests', () => {
         test('should reserve tickets and return reservation id and price', async () => {
             const data = {
                 userID: '_4a12pz',
-                ticketID: ['_j8w6y6']
+                ticketID: ['_gd74ae']
             }
 
             const result = await db.placeReservation(data);
 
             expect(result).toHaveProperty('id');
-            expect(result).toHaveProperty('price', 25);
+            expect(result).toHaveProperty('price', 20);
         });
 
     });
