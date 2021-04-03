@@ -72,6 +72,34 @@ describe('database API tests', () => {
 
     });
 
+    describe('tests reserveTickets', () => {
+
+        test('should reserve ticket and return price', async () => {
+            const ticketID = ['_j8w6y6'];
+            const reservationID = '_oo1234';
+
+            const result = db.reserveTickets(ticketID, reservationID);
+
+            await expect(result).resolves.toBe(25);
+        });
+
+    });
+
+    describe('tests placeReservation', () => {
+
+        test('should reserve tickets and return reservation id and price', async () => {
+            const data = {
+                userID: '_4a12pz',
+                ticketID: ['_j8w6y6']
+            }
+
+            const result = await db.placeReservation(data);
+
+            expect(result).toHaveProperty('id');
+            expect(result).toHaveProperty('price', 25);
+        });
+
+    });
 
 
 })
