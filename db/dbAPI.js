@@ -7,13 +7,14 @@ const databaseRequest = require("./dbMock");
 
 /**
  * Class DatabaseAPI
- * A primitive database mock to test the services
+ * A class that has exclusive access to the database, and performs actions desired by requests
  */
 
 class DatabaseAPI {
   /**
    * Due to the lack of a real database and it's TRANSACTIONs, we need to use async-mutexes in order to be sure,
    * that double-booking problem won't exist, and the reservation under payment won't be released.
+   * They must be replaced with TRANSACTIONs in production environment
    */
   constructor() {
     this.reservationMutex = new Mutex();

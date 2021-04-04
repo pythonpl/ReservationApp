@@ -7,7 +7,7 @@ const MockUtils = require("./dbMockUtils");
 
 /**
  * Class Database
- * A primitive database mock to test the services
+ * A primitive database simulator to test the services
  */
 class Database {
   /**
@@ -42,7 +42,7 @@ class Database {
   };
 
   /**
-   * DB METHODS
+   * DB CONNECTOR METHODS
    * ALL METHODS SHOULD RETURN PROMISE AS IN PROPER DB API
    * These method can be modified to a real database connector if needed
    */

@@ -1,163 +1,217 @@
-const app = require('../../app');
-const testRoutes = require('../testroute');
-app.use('/', testRoutes);
+const app = require("../../app");
+const testRoutes = require("../testroute");
+app.use("/", testRoutes);
 
-const request = require('supertest');
-const ERRORS = require('../../constants/commonErrors');
+const request = require("supertest");
+const ERRORS = require("../../constants/commonErrors");
 
-const URL = 'http://localhost:3700';
-
+const URL = "http://localhost:3700";
 
 afterEach(async () => {
-    return await request(URL).get('/reset');   
+  return await request(URL).get("/reset");
 });
 
+describe("API TESTS POST /reserve", () => {
+  test("Should reject request with error ReservationRequestInvalid (does not match schema, invalid userID and ticketIDs)", async () => {
+    const route = "/reserve";
 
-describe('INTEGRATION TESTS POST /reserve', () => {
+    const inputData = {
+      userID: 1,
+      ticketID: [1, 2],
+    };
 
-    test('Should reject request with error ReservationRequestInvalid', async ()=>{
+    const expected = JSON.stringify(ERRORS.ReservationRequestInvalid);
 
-        const route = '/reserve';
+    await request(URL).post(route).send(inputData).expect(expected);
+  });
 
-        const inputData = {
-            userID: 1,
-            ticketID: [1, 2]
-        };
+  test("Should reject request with error ReservationRequestInvalid (empty data)", async () => {
+    const route = "/reserve";
 
-        const expected = JSON.stringify(ERRORS.ReservationRequestInvalid);
+    const inputData = {};
 
-        await request(URL).post(route).send(inputData).expect(expected);
-    })
+    const expected = JSON.stringify(ERRORS.ReservationRequestInvalid);
 
-    test('Should reject request with error ReservationRequestInvalid', async ()=>{
+    await request(URL).post(route).send(inputData).expect(expected);
+  });
 
-        const route = '/reserve';
-        
-        const inputData = {};
+  test("Should return {*id*, 25} successfully (valid userID and ticketIDs)", async () => {
+    const route = "/reserve";
 
-        const expected = JSON.stringify(ERRORS.ReservationRequestInvalid);
+    const inputData = { userID: "_4a12pz", ticketID: ["_j8w6y6"] };
 
-        await request(URL).post(route).send(inputData).expect(expected);
-    })
+    await request(URL)
+      .post(route)
+      .send(inputData)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("id");
+        expect(res.body).toHaveProperty("price", 25);
+      });
+  });
 
-    test('Should return {id, price} successfully', async ()=>{
+  test("Should reject request with error RequestInvalidData (valid userID and invalid ticketIDs)", async () => {
+    const route = "/reserve";
 
-        const route = '/reserve';
-        
-        const inputData = { userID: '_4a12pz', ticketID: ["_j8w6y6"]};
+    const inputData = { userID: "_4a12pz", ticketID: ["_aaaay6", "_pppp11"] };
 
-        await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-            expect(res.body).toHaveProperty('id');
-            expect(res.body).toHaveProperty('price', 25);
-        });
+    const expected = JSON.stringify(ERRORS.RequestInvalidData);
 
-    })
+    await request(URL).post(route).send(inputData).expect(expected);
+  });
 
-    test('Should return {id, price} for the first time, and errror TicketsAlreadyTaken for the second', async ()=>{
+  test("Should return {*id*, 25} for the first time (valid userID and ticketIDs), and errror TicketsAlreadyTaken for the second (tickets already taken)", async () => {
+    const route = "/reserve";
 
-        const route = '/reserve';
-        
-        const inputData = { userID: '_4a12pz', ticketID: ["_j8w6y6"]};
+    const inputData = { userID: "_4a12pz", ticketID: ["_j8w6y6"] };
 
-        await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-            expect(res.body).toHaveProperty('id');
-            expect(res.body).toHaveProperty('price', 25);
-        }).then(async()=>{
-            await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-                expect(res.body).toBe(ERRORS.TicketsAlreadyTaken);
-            });
-        });
+    await request(URL)
+      .post(route)
+      .send(inputData)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("id");
+        expect(res.body).toHaveProperty("price", 25);
+      })
+      .then(async () => {
+        await request(URL)
+          .post(route)
+          .send(inputData)
+          .expect("Content-Type", /json/)
+          .expect(200)
+          .then((res) => {
+            expect(res.body).toBe(ERRORS.TicketsAlreadyTaken);
+          });
+      });
+  });
+});
 
-    })
+describe("API TESTS POST /pay", () => {
+  test("Should return success (valid userID, reservationID, token)", async () => {
+    const route = "/pay";
 
-})
+    const inputData = {
+      userID: "_4a12pz",
+      reservationID: "_4kwcny",
+      token: "paymenttoken",
+    };
 
+    await request(URL)
+      .post(route)
+      .send(inputData)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("status", "success");
+      });
+  });
 
-describe('INTEGRATION TESTS POST /pay', () => {
+  test("Should return success at first payment attempt (valid userID, reservationID, token), and error at second (already paid reservation)", async () => {
+    const route = "/pay";
 
-    test('Should return success', async ()=>{
+    const inputData = {
+      userID: "_4a12pz",
+      reservationID: "_4kwcny",
+      token: "paymenttoken",
+    };
 
-        const route = '/pay';
-
-        const inputData = { userID: '_4a12pz', reservationID: '_4kwcny', token: 'paymenttoken' };;
-
-        await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-            expect(res.body).toHaveProperty('status', 'success');
-        });
-
-    });
-
-    test('Should return success at first payment attempt, and error at second', async ()=>{
-
-        const route = '/pay';
-
-        const inputData = { userID: '_4a12pz', reservationID: '_4kwcny', token: 'paymenttoken' };
-
-        await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-            expect(res.body).toHaveProperty('status', 'success');
-        }).then(async ()=>{
-            await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-                expect(res.body).toBe(ERRORS.RequestInvalidData);
-            });
-        });
-
-    });
-
-    test('Should reject request with error ReservationRequestInvalid', async ()=>{
-
-        const route = '/pay';
-
-        const inputData = { userID: '_4a12pz', reservationID: '_599cny', token: 'paymenttoken' };
-
-        await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-            expect(res.body).toBe(ERRORS.ReservationDataInvalid);
-        });
-
-    });
-
-    
-
-    test('Should reject request with error RequestInvalidData (userID and reservationID not associtated)', async ()=>{
-
-        const route = '/pay';
-
-        const inputData = { userID: '_5s73fs', reservationID: '_4kwcny', token: 'paymenttoken' };
-
-        await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
+    await request(URL)
+      .post(route)
+      .send(inputData)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("status", "success");
+      })
+      .then(async () => {
+        await request(URL)
+          .post(route)
+          .send(inputData)
+          .expect("Content-Type", /json/)
+          .expect(200)
+          .then((res) => {
             expect(res.body).toBe(ERRORS.RequestInvalidData);
-        });
+          });
+      });
+  });
 
-    });
+  test("Should reject request with error ReservationRequestInvalid (invalid reservationID)", async () => {
+    const route = "/pay";
 
+    const inputData = {
+      userID: "_4a12pz",
+      reservationID: "_599cny",
+      token: "paymenttoken",
+    };
 
-    test('Should reject request with error PaymentDeclined', async ()=>{
+    await request(URL)
+      .post(route)
+      .send(inputData)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toBe(ERRORS.ReservationDataInvalid);
+      });
+  });
 
-        const route = '/pay';
+  test("Should reject request with error RequestInvalidData (userID and reservationID not associtated)", async () => {
+    const route = "/pay";
 
-        const inputData = { userID: '_4a12pz', reservationID: '_4kwcny', token: 'card_error' };
+    const inputData = {
+      userID: "_5s73fs",
+      reservationID: "_4kwcny",
+      token: "paymenttoken",
+    };
 
-        await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-            expect(res.body).toBe(ERRORS.PaymentDeclined);
-        });
+    await request(URL)
+      .post(route)
+      .send(inputData)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toBe(ERRORS.RequestInvalidData);
+      });
+  });
 
-    });
+  test("Should reject request with error PaymentDeclined (token declined)", async () => {
+    const route = "/pay";
 
-    test('Should reject request with error PaymentError', async ()=>{
+    const inputData = {
+      userID: "_4a12pz",
+      reservationID: "_4kwcny",
+      token: "card_error",
+    };
 
-        const route = '/pay';
+    await request(URL)
+      .post(route)
+      .send(inputData)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toBe(ERRORS.PaymentDeclined);
+      });
+  });
 
-        const inputData = { userID: '_4a12pz', reservationID: '_4kwcny', token: 'payment_error' };
+  test("Should reject request with error PaymentError (token error)", async () => {
+    const route = "/pay";
 
-        await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-            expect(res.body).toBe(ERRORS.PaymentError);
-        });
+    const inputData = {
+      userID: "_4a12pz",
+      reservationID: "_4kwcny",
+      token: "payment_error",
+    };
 
-    });
-
-
-    
-})
-
-
+    await request(URL)
+      .post(route)
+      .send(inputData)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toBe(ERRORS.PaymentError);
+      });
+  });
+});
 
 

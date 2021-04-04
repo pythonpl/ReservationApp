@@ -1,55 +1,87 @@
-const app = require('../../app');
+const app = require("../../app");
+const testRoutes = require("../testroute");
+app.use("/", testRoutes);
 
-const request = require('supertest');
-const ERRORS = require('../../utils/commonErrors');
+const request = require("supertest");
+const ERRORS = require("../../constants/commonErrors");
 
-const URL = 'http://localhost:3700';
+const URL = "http://localhost:3700";
 
-
-const generateData = function (q) {
-    const table = []
-    for (let i = 0; i < q; i++){
-        table.push(i);
-    }
-    return table;
-}
-
-const concurrentTests = generateData(10000);
-
-describe.skip('load test', () => {
-
-    test.concurrent('should return success 1', async () => {
-
-        const inputData = { userID: '_4a12pz', ticketID: ["_j8w6y6"] };
-
-        const route = '/reserve'
-
-        await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-            expect(res.body).toHaveProperty('id');
-            expect(res.body).toHaveProperty('price', 25);
-        });
-
-    })
-
-    test.concurrent.each(concurrentTests)('should fail', async () => {
-
-        const inputData = { userID: '_4a12pz', ticketID: ["_j8w6y6"] };
-
-        const route = '/reserve'
-
-        await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-            expect(res.body).toBe(ERRORS.TicketsAlreadyTaken);
-        });
-
-    })
-
+// DB CLEANUP
+afterEach(async () => {
+  return await request(URL).get("/reset");
 });
 
-describe('show free', ()=>{
-    test.concurrent.each(concurrentTests)('should return 200', async () => {
-        const route = '/freeTickets'
+describe("API TESTS POST /pay and /reserve", () => {
+  test("Should reserve and then pay successfully", async () => {
+    const route = "/reserve";
 
-        await request(URL).get(route).expect('Content-Type', /json/).expect(200);
+    const inputData = { userID: "_4a12pz", ticketID: ["_j8w6y6"] };
 
-    })
-})
+    await request(URL)
+      .post(route)
+      .send(inputData)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("id");
+        expect(res.body).toHaveProperty("price", 25);
+        return res;
+      })
+      .then(async (res) => {
+        await request(URL)
+          .post("/pay")
+          .send({
+            userID: "_4a12pz",
+            reservationID: res.body.id,
+            token: "paymentaccepted",
+          })
+          .expect("Content-Type", /json/)
+          .expect(200)
+          .then((res) => {
+            expect(res.body).toHaveProperty("status", "success");
+          });
+      });
+  });
+
+  test("Should reserve and then pay successfully, and then can't reserve same tickets", async () => {
+    const route = "/reserve";
+
+    const inputData = { userID: "_4a12pz", ticketID: ["_j8w6y6"] };
+
+    await request(URL)
+      .post(route)
+      .send(inputData)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("id");
+        expect(res.body).toHaveProperty("price", 25);
+        return res;
+      })
+      .then(async (res) => {
+        await request(URL)
+          .post("/pay")
+          .send({
+            userID: "_4a12pz",
+            reservationID: res.body.id,
+            token: "paymentaccepted",
+          })
+          .expect("Content-Type", /json/)
+          .expect(200)
+          .then((res) => {
+            expect(res.body).toHaveProperty("status", "success");
+          });
+      })
+      .then(async () => {
+        await request(URL)
+          .post(route)
+          .send(inputData)
+          .expect("Content-Type", /json/)
+          .expect(200)
+          .then((res) => {
+            expect(res.body).toBe(ERRORS.TicketsAlreadyTaken);
+          });
+      });
+  });
+});
