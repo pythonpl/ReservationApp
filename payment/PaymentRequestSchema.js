@@ -1,4 +1,4 @@
-const Ajv = require('ajv');
+const Ajv = require("ajv");
 const ajv = new Ajv();
 
 /**
@@ -6,24 +6,24 @@ const ajv = new Ajv();
  * Let's assume, that in our DB we use string IDs that have length = 7, so they need to match this.
  */
 const schema = {
-    type : 'object',
-    properties : {
-        userID : {
-            type: 'string',
-            minLength: 7,
-            maxLength: 7
-        },
-        reservationID : {
-            type: 'string',
-            minLength: 7,
-            maxLength: 7
-        },
-        token : {
-            type: 'string',
-            minLength: 1
-        }
+  type: "object",
+  properties: {
+    userID: {
+      type: "string",
+      minLength: 7,
+      maxLength: 7,
     },
-    required: ['userID', 'reservationID', 'token']
-}
+    reservationID: {
+      type: "string",
+      minLength: 7,
+      maxLength: 7,
+    },
+    token: {
+      type: "string",
+      minLength: 1,
+    },
+  },
+  required: ["userID", "reservationID", "token"],
+};
 
 module.exports = ajv.compile(schema);

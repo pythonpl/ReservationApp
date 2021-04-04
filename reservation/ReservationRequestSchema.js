@@ -1,4 +1,4 @@
-const Ajv = require('ajv');
+const Ajv = require("ajv");
 const ajv = new Ajv();
 
 /**
@@ -7,25 +7,25 @@ const ajv = new Ajv();
  * Ticket IDs in ticketID array should be unique.
  */
 const schema = {
-    type : 'object',
-    properties : {
-        userID : {
-            type: 'string',
-            minLength: 7,
-            maxLength: 7
-        },
-        ticketID: {
-            type: 'array',
-            contains : {
-                type : "string",
-                minLength: 7,
-                maxLength: 7
-            },
-            minItems : 1,
-            uniqueItems : true
-        }
+  type: "object",
+  properties: {
+    userID: {
+      type: "string",
+      minLength: 7,
+      maxLength: 7,
     },
-    required: ['userID', 'ticketID']
-}
+    ticketID: {
+      type: "array",
+      contains: {
+        type: "string",
+        minLength: 7,
+        maxLength: 7,
+      },
+      minItems: 1,
+      uniqueItems: true,
+    },
+  },
+  required: ["userID", "ticketID"],
+};
 
 module.exports = ajv.compile(schema);
