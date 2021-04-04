@@ -59,9 +59,9 @@ class Database {
   selectUser(id) {
     return new Promise((resolve) => {
       if (this.users.hasOwnProperty(id)) {
-        resolve([this.users[id]]);
+        return resolve([this.users[id]]);
       } else {
-        resolve([]);
+        return resolve([]);
       }
     });
   }
@@ -74,9 +74,9 @@ class Database {
   selectReservation(id) {
     return new Promise((resolve) => {
       if (this.reservations.hasOwnProperty(id)) {
-        resolve([this.reservations[id]]);
+        return resolve([this.reservations[id]]);
       } else {
-        resolve([]);
+        return resolve([]);
       }
     });
   }
@@ -89,9 +89,9 @@ class Database {
   selectTicket(id) {
     return new Promise((resolve) => {
       if (this.tickets.hasOwnProperty(id)) {
-        resolve([this.tickets[id]]);
+        return resolve([this.tickets[id]]);
       } else {
-        resolve([]);
+        return resolve([]);
       }
     });
   }
@@ -106,7 +106,7 @@ class Database {
         if (this.tickets[id].reservationID === PARAMS.EMPTY_RESERVATION)
           return id;
       });
-      resolve(freeTickets);
+      return resolve(freeTickets);
     });
   }
 
@@ -127,7 +127,7 @@ class Database {
         this.tickets[x].setReservation(reservationID);
         price += this.tickets[x].price;
       });
-      resolve(price);
+      return resolve(price);
     });
   }
 
@@ -140,7 +140,7 @@ class Database {
   updateReservationPrice(reservationID, price) {
     return new Promise((resolve) => {
       this.reservations[reservationID].amount = price;
-      resolve(true);
+      return resolve(true);
     });
   }
 
@@ -153,7 +153,7 @@ class Database {
   updateReservationPayment(reservationID, paymentStatus) {
     return new Promise((resolve) => {
       this.reservations[reservationID].paymentStatus = paymentStatus;
-      resolve(true);
+      return resolve(true);
     });
   }
 
@@ -174,7 +174,7 @@ class Database {
         userID: data.userID,
         ticketID: data.ticketID,
       });
-      resolve(id);
+      return resolve(id);
     });
   }
 
@@ -210,7 +210,7 @@ class Database {
         })
       }
 
-      resolve(reservationsToSchedule);
+      return resolve(reservationsToSchedule);
     });
   }
 
@@ -234,7 +234,7 @@ class Database {
           PARAMS.EMPTY_RESERVATION
         );
       }
-      resolve(reservationsCleaned.length);
+      return resolve(reservationsCleaned.length);
     });
   }
 }

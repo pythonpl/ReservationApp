@@ -1,4 +1,5 @@
 const verifyReservationRequest = require("./ReservationRequestVerify");
+const ERRORS = require("../constants/commonErrors");
 const db = require("../db/dbAPI");
 
 const express = require("express");

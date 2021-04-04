@@ -52,7 +52,7 @@ class Reservation {
    */
   canBeReleased() {
     return (
-      !this.isCompleted() && !this.isLockedForThePayment() && this.isExpired()
+      !this.isCompleted() && this.isExpired() && !this.isLockedForThePayment()
     );
   }
 

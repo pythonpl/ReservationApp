@@ -26,7 +26,7 @@ class DatabaseAPI {
    */
   checkUserExistence(userID) {
     return new Promise(async (resolve) => {
-      resolve((await databaseRequest.selectUser(userID)).length === 1);
+      return resolve((await databaseRequest.selectUser(userID)).length === 1);
     });
   }
 
@@ -37,7 +37,7 @@ class DatabaseAPI {
    */
   checkReservationExistence(reservationID) {
     return new Promise(async (resolve) => {
-      resolve(
+      return resolve(
         (await databaseRequest.selectReservation(reservationID)).length === 1
       );
     });
@@ -50,7 +50,7 @@ class DatabaseAPI {
    */
   checkIfReservationAwaitsPayment(reservationID) {
     return new Promise(async (resolve) => {
-      resolve(
+      return resolve(
         (
           await databaseRequest.selectReservation(reservationID)
         )[0].isWaitingForPayment()
@@ -65,7 +65,7 @@ class DatabaseAPI {
    */
   checkTicketExistence(ticketID) {
     return new Promise(async (resolve) => {
-      resolve((await databaseRequest.selectTicket(ticketID)).length === 1);
+      return resolve((await databaseRequest.selectTicket(ticketID)).length === 1);
     });
   }
 
@@ -77,12 +77,12 @@ class DatabaseAPI {
   checkReservationBelongsToUser(data) {
     return new Promise(async (resolve, reject) => {
       if (await this.checkReservationExistence(data.reservationID)) {
-        resolve(
+        return resolve(
           (await databaseRequest.selectReservation(data.reservationID))[0]
             .userID === data.userID
         );
       } else {
-        reject(new Error(ERRORS.ReservationDataInvalid));
+        return reject(new Error(ERRORS.ReservationDataInvalid));
       }
     });
   }
@@ -95,12 +95,12 @@ class DatabaseAPI {
   isTicketFree(ticketID) {
     return new Promise(async (resolve, reject) => {
       if (await this.checkTicketExistence(ticketID)) {
-        resolve(
+        return resolve(
           (await databaseRequest.selectTicket(ticketID))[0].reservationID ===
             PARAMS.EMPTY_RESERVATION
         );
       } else {
-        reject(new Error(ERRORS.TicketDataInvalid));
+        return reject(new Error(ERRORS.TicketDataInvalid));
       }
     });
   }
@@ -113,7 +113,7 @@ class DatabaseAPI {
    */
   reserveTickets(tickets, id) {
     return new Promise(async (resolve) => {
-      resolve(await databaseRequest.updateTicketsReservation(tickets, id));
+      return resolve(await databaseRequest.updateTicketsReservation(tickets, id));
     });
   }
 
@@ -139,9 +139,9 @@ class DatabaseAPI {
 
         this.scheduleReservationExpiration(id);
 
-        resolve({ id, price });
+        return resolve({ id, price });
       } catch (e) {
-        reject(e);
+        return reject(e);
       } finally {
         release();
       }
@@ -169,9 +169,9 @@ class DatabaseAPI {
           data.reservationID,
           PAYMENT_STATUS.STARTED
         );
-        resolve(reservation.amount);
+        return resolve(reservation.amount);
       } catch (e) {
-        reject(e);
+        return reject(e);
       } finally {
         release();
       }
@@ -191,13 +191,14 @@ class DatabaseAPI {
         const status = success
           ? PAYMENT_STATUS.SUCCESSFULL
           : PAYMENT_STATUS.FAILED;
+
         await databaseRequest.updateReservationPayment(
           data.reservationID,
           status
         );
-        resolve(true);
+        return resolve(true);
       } catch (e) {
-        reject(e);
+        return reject(e);
       } finally {
         release();
         this.updateReservationValidity(data.reservationID);
@@ -215,19 +216,22 @@ class DatabaseAPI {
       const release = await this.reservationMutex.acquire();
       try {
         if (!(await this.checkReservationExistence(reservationID)))
-          resolve(false);
+          return resolve(false);
 
         const reservation = (
           await databaseRequest.selectReservation(reservationID)
         )[0];
 
-        if (!reservation.canBeReleased()) resolve(false);
+        if (!reservation.canBeReleased()) {
+
+          return resolve(false);
+        }
 
         await databaseRequest.updateTicketsReservation(
           reservation.tickets,
           PARAMS.EMPTY_RESERVATION
         );
-        resolve(true);
+        return resolve(true);
       } finally {
         release();
       }
@@ -240,7 +244,7 @@ class DatabaseAPI {
    */
   findFreeTickets() {
     return new Promise(async (resolve) => {
-      resolve(await databaseRequest.selectFreeTickets());
+      return resolve(await databaseRequest.selectFreeTickets());
     });
   }
 
@@ -282,7 +286,7 @@ class DatabaseAPI {
         release();
       }
 
-      resolve({
+      return resolve({
         cleaned: expiredReservations,
         scheduled: scheduledReservations.length,
       });
