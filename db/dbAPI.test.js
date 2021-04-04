@@ -66,7 +66,7 @@ describe("database API tests", () => {
     test('should return ["_j8w6y6", "_gd74ae"] ', async () => {
       const result = db.findFreeTickets();
 
-      await expect(result).resolves.toEqual(["_j8w6y6", "_gd74ae"]);
+      await expect(result).resolves.toEqual(["_j8w6y6", "_gd74ae", "_1a1iu1", "_54tgr2", "_0oap21"]);
     });
   });
 

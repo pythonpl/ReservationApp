@@ -1,15 +1,10 @@
 const app = require("../../app");
-const testRoutes = require("../testroute");
-app.use("/", testRoutes);
 
 const request = require("supertest");
 const ERRORS = require("../../constants/commonErrors");
 
 const URL = "http://localhost:3700";
 
-afterEach(async () => {
-  return await request(URL).get("/reset");
-});
 
 describe("API TESTS POST /reserve", () => {
   test("Should reject request with error ReservationRequestInvalid (does not match schema, invalid userID and ticketIDs)", async () => {
@@ -61,10 +56,10 @@ describe("API TESTS POST /reserve", () => {
     await request(URL).post(route).send(inputData).expect(expected);
   });
 
-  test("Should return {*id*, 25} for the first time (valid userID and ticketIDs), and errror TicketsAlreadyTaken for the second (tickets already taken)", async () => {
+  test("Should return {*id*, 30} for the first time (valid userID and ticketIDs), and errror TicketsAlreadyTaken for the second (tickets already taken)", async () => {
     const route = "/reserve";
 
-    const inputData = { userID: "_4a12pz", ticketID: ["_j8w6y6"] };
+    const inputData = { userID: "_4a12pz", ticketID: ["_0oap21", "_54tgr2"] };
 
     await request(URL)
       .post(route)
@@ -73,7 +68,7 @@ describe("API TESTS POST /reserve", () => {
       .expect(200)
       .then((res) => {
         expect(res.body).toHaveProperty("id");
-        expect(res.body).toHaveProperty("price", 25);
+        expect(res.body).toHaveProperty("price", 30);
       })
       .then(async () => {
         await request(URL)
@@ -105,35 +100,6 @@ describe("API TESTS POST /pay", () => {
       .expect(200)
       .then((res) => {
         expect(res.body).toHaveProperty("status", "success");
-      });
-  });
-
-  test("Should return success at first payment attempt (valid userID, reservationID, token), and error at second (already paid reservation)", async () => {
-    const route = "/pay";
-
-    const inputData = {
-      userID: "_4a12pz",
-      reservationID: "_4kwcny",
-      token: "paymenttoken",
-    };
-
-    await request(URL)
-      .post(route)
-      .send(inputData)
-      .expect("Content-Type", /json/)
-      .expect(200)
-      .then((res) => {
-        expect(res.body).toHaveProperty("status", "success");
-      })
-      .then(async () => {
-        await request(URL)
-          .post(route)
-          .send(inputData)
-          .expect("Content-Type", /json/)
-          .expect(200)
-          .then((res) => {
-            expect(res.body).toBe(ERRORS.RequestInvalidData);
-          });
       });
   });
 
@@ -180,7 +146,7 @@ describe("API TESTS POST /pay", () => {
 
     const inputData = {
       userID: "_4a12pz",
-      reservationID: "_4kwcny",
+      reservationID: "_awccn8",
       token: "card_error",
     };
 
@@ -199,7 +165,7 @@ describe("API TESTS POST /pay", () => {
 
     const inputData = {
       userID: "_4a12pz",
-      reservationID: "_4kwcny",
+      reservationID: "_awccn8",
       token: "payment_error",
     };
 

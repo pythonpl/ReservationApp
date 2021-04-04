@@ -15,7 +15,13 @@ class Database {
    * TABLES: reservations, users, tickets
    * With some example initial values for testing purposes
    */
-  users = { _4a12pz: {}, _5s73fs: {} };
+  users = {
+    _4a12pz: {},
+    _5s73fs: {},
+    _pppq12: {},
+    _aaqqew: {},
+    _llaks1: {},
+  };
 
   // Reservation table: each reservation belongs to user and contains array of ticketids
   reservations = {
@@ -25,10 +31,21 @@ class Database {
       amount: 15,
       id: "_4kwcny",
     }),
+    _awccn8: new Reservation({
+      userID: "_4a12pz",
+      ticketID: ["_pok1sq"],
+      amount: 15,
+      id: "_awccn8",
+    }),
   };
-
+ 
   // We consider tickets as unique objects.
   tickets = {
+    _6c1iu1: new Ticket({
+      price: 15,
+      reservationID: "_4kwcny",
+      id: "_6c1iu1",
+    }),
     _j8w6y6: new Ticket({
       price: 25,
       reservationID: PARAMS.EMPTY_RESERVATION,
@@ -39,10 +56,53 @@ class Database {
       reservationID: PARAMS.EMPTY_RESERVATION,
       id: "_gd74ae",
     }),
-    _6c1iu1: new Ticket({ price: 15, reservationID: "_4kwcny", id: "_6c1iu1" }),
+    _1a1iu1: new Ticket({
+      price: 15,
+      reservationID: PARAMS.EMPTY_RESERVATION,
+      id: "_1a1iu1",
+    }),
+    _54tgr2: new Ticket({
+      price: 15,
+      reservationID: PARAMS.EMPTY_RESERVATION,
+      id: "_54tgr2",
+    }),
+    _0oap21: new Ticket({
+      price: 15,
+      reservationID: PARAMS.EMPTY_RESERVATION,
+      id: "_0oap21",
+    }),
+    _pok1sq: new Ticket({
+      price: 15,
+      reservationID: PARAMS.EMPTY_RESERVATION,
+      id: "_pok1sq",
+    }),
+    _mnvbv1: new Ticket({
+      price: 15,
+      reservationID: PARAMS.EMPTY_RESERVATION,
+      id: "_mnvbv1",
+    }),
+    _lsd198: new Ticket({
+      price: 15,
+      reservationID: PARAMS.EMPTY_RESERVATION,
+      id: "_lsd198",
+    }),
+    _vvbva1: new Ticket({
+      price: 15,
+      reservationID: PARAMS.EMPTY_RESERVATION,
+      id: "_vvbva1",
+    }),
   };
 
   sellingStrategy = STRATEGY.FREE_SALE;
+
+  constructor() {
+    if (!Database.instance) {
+      this._data = [];
+      Database.instance = this;
+    }
+
+    return Database.instance;
+  }
 
   /**
    * DB CONNECTOR METHODS
@@ -103,7 +163,7 @@ class Database {
    * acts like 'SELECT strategy FROM sellingStrategy'
    * @returns {Promise<String>} resolves selling strategy
    */
-   selectSellingStrategy() {
+  selectSellingStrategy() {
     return new Promise((resolve) => {
       return resolve(this.sellingStrategy);
     });
@@ -215,12 +275,12 @@ class Database {
           return id;
       });
 
-      const reservationsToSchedule = []
+      const reservationsToSchedule = [];
       for (let id of validReservations) {
         reservationsToSchedule.push({
-          id : id,
-          datetime: this.reservations[id].datetime
-        })
+          id: id,
+          datetime: this.reservations[id].datetime,
+        });
       }
 
       return resolve(reservationsToSchedule);
@@ -251,4 +311,7 @@ class Database {
     });
   }
 }
-module.exports = new Database();
+
+const database = new Database();
+Object.freeze(database);
+module.exports = database;
