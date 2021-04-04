@@ -21,4 +21,11 @@ module.exports = {
   ReservationRequestInvalid: "Reservation request has invalid syntax.",
   PaymentRequestInvalid: "Payment request has invalid syntax.",
   RequestInvalidData: "Request contains invalid data.",
+
+  /**
+   * Selling strategy errors definitions
+   */
+  SellingStrategyEven: "The number of reserved tickets has to be even.",
+  SellingStrategyAll: "The number of reserved tickets has to be equal to number of all tickets.",
+  SellingStrategyAvoidOne: "Leaving one ticket free is not allowed",
 };

@@ -2,6 +2,7 @@ const Ticket = require("./TicketClass");
 const Reservation = require("./ReservationClass");
 
 const PARAMS = require("../constants/params");
+const STRATEGY = require("../constants/sellingStrategy");
 
 const MockUtils = require("./dbMockUtils");
 
@@ -40,6 +41,8 @@ class Database {
     }),
     _6c1iu1: new Ticket({ price: 15, reservationID: "_4kwcny", id: "_6c1iu1" }),
   };
+
+  sellingStrategy = STRATEGY.FREE_SALE;
 
   /**
    * DB CONNECTOR METHODS
@@ -93,6 +96,16 @@ class Database {
       } else {
         return resolve([]);
       }
+    });
+  }
+
+  /**
+   * acts like 'SELECT strategy FROM sellingStrategy'
+   * @returns {Promise<String>} resolves selling strategy
+   */
+   selectSellingStrategy() {
+    return new Promise((resolve) => {
+      return resolve(this.sellingStrategy);
     });
   }
 

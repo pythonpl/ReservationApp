@@ -1,6 +1,7 @@
 const ERRORS = require("../constants/commonErrors");
 const PARAMS = require("../constants/params");
 const PAYMENT_STATUS = require("../constants/PaymentStatusCodes");
+const STRATEGY = require("../constants/sellingStrategy");
 
 const { Mutex } = require("async-mutex");
 const databaseRequest = require("./dbMock");
@@ -66,7 +67,9 @@ class DatabaseAPI {
    */
   checkTicketExistence(ticketID) {
     return new Promise(async (resolve) => {
-      return resolve((await databaseRequest.selectTicket(ticketID)).length === 1);
+      return resolve(
+        (await databaseRequest.selectTicket(ticketID)).length === 1
+      );
     });
   }
 
@@ -114,19 +117,58 @@ class DatabaseAPI {
    */
   reserveTickets(tickets, id) {
     return new Promise(async (resolve) => {
-      return resolve(await databaseRequest.updateTicketsReservation(tickets, id));
+      return resolve(
+        await databaseRequest.updateTicketsReservation(tickets, id)
+      );
+    });
+  }
+
+  /**
+   * Checks if number of selected tickets match current selling strategy
+   * @param {Object} reservation that matches ReservationRequestSchema
+   * @returns {Promise} resolves with true if matches, rejects with error otherwise
+   */
+  checkSellingStrategyMatch(data) {
+    return new Promise(async (resolve, reject) => {
+      const sellingStrategy = await databaseRequest.selectSellingStrategy();
+      const numberOfFreeTickets = await this.findFreeTickets().length;
+      switch (sellingStrategy) {
+        case STRATEGY.AVOID_ONE:
+          if (numberOfFreeTickets - data.ticketID.length > 1) {
+            return resolve(true);
+          } else {
+            return reject(new Error(ERRORS.SellingStrategyAvoidOne));
+          }
+        case STRATEGY.EVEN:
+          if (data.ticketID.length % 2 == 0) {
+            return resolve(true);
+          } else {
+            return reject(new Error(ERRORS.SellingStrategyEven));
+          }
+        case STRATEGY.ALL:
+          if (numberOfFreeTickets == data.ticketID.length) {
+            return resolve(true);
+          } else {
+            return reject(new Error(ERRORS.SellingStrategyAll));
+          }
+        default:
+          return resolve(true);
+      }
     });
   }
 
   /**
    * Places new Reservation
-   * @param {Object} reservation matches ReservationRequestSchema
+   * @param {Object} reservation that matches ReservationRequestSchema
    * @returns {Promise} resolves with price and reservationID if everything went good, rejects if there is a problem
    */
   placeReservation(data) {
     return new Promise(async (resolve, reject) => {
       const release = await this.reservationMutex.acquire();
       try {
+
+        this.checkSellingStrategyMatch(data);
+
         const ticketsFree = await Promise.all(
           data.ticketID.map((x) => this.isTicketFree(x))
         );
@@ -224,7 +266,6 @@ class DatabaseAPI {
         )[0];
 
         if (!reservation.canBeReleased()) {
-
           return resolve(false);
         }
 
