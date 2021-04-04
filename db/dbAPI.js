@@ -222,16 +222,9 @@ class Database {
             if (!(await this.checkReservationExistence(reservationID)))
                 resolve(false);
 
-
             const release = await this.changeReservationStatusMutex.acquire();
             try {
-                if (this.reservations[reservationID].isCompleted())
-                    resolve(false);
-
-                if (this.reservations[reservationID].isLockedForThePayment())
-                    resolve(false);
-
-                if (this.reservations[reservationID].isNotExpired())
+                if (!this.reservations[reservationID].canBeReleased())
                     resolve(false);
 
                 for (let ticket in this.reservations[reservationID].ticketID) {

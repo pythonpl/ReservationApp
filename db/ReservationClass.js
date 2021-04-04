@@ -33,6 +33,10 @@ class Reservation {
         return (new Date() - this.datetime) < RESERVATION_EXPIRY_TIME;
     }
 
+    canBeReleased(){
+        return !this.isCompleted() && !this.isLockedForThePayment() && !this.isNotExpired();
+    }
+
     beginPayment(){
         this.paymentStatus = PAYMENT_STATUS.STARTED;
     }
