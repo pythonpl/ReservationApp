@@ -10,8 +10,6 @@ const { Mutex } = require("async-mutex");
  * A primitive database mock to test the services
  */
 
-// Empty reservation ID - means the ticket with such number is so far free.
-
 class Database {
   /**
    * TABLES: reservations, users, tickets
