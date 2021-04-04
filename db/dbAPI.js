@@ -156,10 +156,7 @@ class Database {
                 const id = MockUtils.getUniqueID();
                 const price = await this.reserveTickets(data.ticketID, id);
                 this.reservations[id] = new Reservation({ id: id, userID: data.userID, ticketID: data.ticketID, amount: price });
-
-                setTimeout(()=>{
-                    this.updateReservationValidity(id);
-                }, PARAMS.RESERVATION_EXPIRY_TIME)
+                this.scheduleReservationExpiration(id);
 
                 resolve({ id, price });
             } catch (e) {
@@ -250,9 +247,22 @@ class Database {
      */
     findFreeTickets() {
         return new Promise(async (resolve, reject) => {
-            const freeTickets = Object.keys(this.tickets).filter((id)=>{ if(this.tickets[id].reservationID === EMPTY_RESERVATION) return id; })
+            const freeTickets = Object.keys(this.tickets).filter((id) => {
+                if (this.tickets[id].reservationID === EMPTY_RESERVATION) 
+                    return id;
+            })
             resolve(freeTickets);
         });
+    }
+
+    /**
+     * Schedules function execution, that checks if reservation can be released
+     * @param {String} reservationID
+     */
+    scheduleReservationExpiration(reservationID) {
+        setTimeout(() => {
+            this.updateReservationValidity(reservationID);
+        }, PARAMS.RESERVATION_EXPIRY_TIME);
     }
 
 }
