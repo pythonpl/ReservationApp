@@ -1,4 +1,5 @@
 const ERRORS = require('../utils/commonErrors');
+const PARAMS = require('../utils/params');
 const Ticket = require('./TicketClass');
 const Reservation = require('./ReservationClass');
 const MockUtils = require('./dbMockUtils')
@@ -156,6 +157,10 @@ class Database {
                 const price = await this.reserveTickets(data.ticketID, id);
                 this.reservations[id] = new Reservation({ id: id, userID: data.userID, ticketID: data.ticketID, amount: price });
 
+                setTimeout(()=>{
+                    this.updateReservationValidity(id);
+                }, PARAMS.RESERVATION_EXPIRY_TIME)
+
                 resolve({ id, price });
             } catch (e) {
                 reject(e);
@@ -177,7 +182,7 @@ class Database {
                 if (this.reservations[data.reservationID].isLockedForThePayment())
                     throw new Error(ERRORS.PaymentStarted);
 
-                if (!this.reservations[data.reservationID].isNotExpired())
+                if (this.reservations[data.reservationID].isExpired())
                     throw new Error(ERRORS.ReservationExired);
 
                 this.reservations[data.reservationID].beginPayment();
@@ -207,6 +212,7 @@ class Database {
                 reject(e);
             } finally {
                 release();
+                this.updateReservationValidity(data.reservationID);
             }
         });
     }
@@ -244,20 +250,7 @@ class Database {
      */
     findFreeTickets() {
         return new Promise(async (resolve, reject) => {
-            const freeTickets = [];
-
-            for (let ticketid of Object.getOwnPropertyNames(this.tickets)) {
-                const ticket = this.tickets[ticketid];
-                if (ticket.reservationID === EMPTY_RESERVATION) {
-                    freeTickets.push(ticket.id);
-                    continue;
-                }
-
-                if (await this.updateReservationValidity(ticket.reservationID)) {
-                    freeTickets.push(ticket.id);
-                }
-            }
-
+            const freeTickets = Object.keys(this.tickets).filter((id)=>{ if(this.tickets[id].reservationID === EMPTY_RESERVATION) return id; })
             resolve(freeTickets);
         });
     }

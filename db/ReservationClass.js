@@ -1,7 +1,5 @@
 const PAYMENT_STATUS = require('../utils/PaymentStatusCodes');
-
-// 15 minutes in MILIS
-const RESERVATION_EXPIRY_TIME = 900000;
+const PARAMS = require('../utils/params');
 
 /**
  * Reservation class. Stores data about reservation: 
@@ -29,12 +27,12 @@ class Reservation {
         return this.paymentStatus === PAYMENT_STATUS.SUCCESSFULL;
     }
 
-    isNotExpired(){
-        return (new Date() - this.datetime) < RESERVATION_EXPIRY_TIME;
+    isExpired(){
+        return (new Date() - this.datetime) > PARAMS.RESERVATION_EXPIRY_TIME;
     }
 
     canBeReleased(){
-        return !this.isCompleted() && !this.isLockedForThePayment() && !this.isNotExpired();
+        return !this.isCompleted() && !this.isLockedForThePayment() && this.isExpired();
     }
 
     beginPayment(){

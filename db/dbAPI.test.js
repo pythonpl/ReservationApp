@@ -72,6 +72,19 @@ describe('database API tests', () => {
 
     });
 
+    describe('tests findFreeTickets', () => {
+
+        test('should return ["_j8w6y6", "_gd74ae"] ', async () => {
+
+            const result = db.findFreeTickets();
+
+            await expect(result).resolves.toEqual(["_j8w6y6", "_gd74ae"]);
+           
+        });
+
+    });
+
+
     describe('tests reserveTickets', () => {
 
         test('should reserve ticket and return price', async () => {
@@ -101,5 +114,6 @@ describe('database API tests', () => {
 
     });
 
+    
 
 })
