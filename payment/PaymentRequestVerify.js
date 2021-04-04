@@ -15,6 +15,8 @@ module.exports = function (data) {
                 db.checkReservationBelongsToUser(data)
             ]);
             
+            results.push(await db.checkIfReservationAwaitsPayment(data.reservationID));
+
             // Resolves true if everything is OK
             return resolve(results.every(x => x === true));
         }catch(e){

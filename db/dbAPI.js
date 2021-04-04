@@ -253,7 +253,6 @@ class Database {
         return new Promise(async (resolve, reject) => {
             const freeTickets = [];
 
-
             for (let ticketid of Object.getOwnPropertyNames(this.tickets)) {
                 const ticket = this.tickets[ticketid];
                 if (ticket.reservationID === EMPTY_RESERVATION) {
