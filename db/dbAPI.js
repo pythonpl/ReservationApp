@@ -17,8 +17,14 @@ class DatabaseAPI {
    * that double-booking problem won't exist, and the reservation under payment won't be released.
    * They must be replaced with TRANSACTIONs in production environment
    */
-  constructor() {
-    this.reservationMutex = new Mutex();
+  constructor() {  
+    if (!DatabaseAPI.instance) {
+      this._data = [];
+      this.reservationMutex = new Mutex();
+      DatabaseAPI.instance = this;
+    }
+
+    return DatabaseAPI.instance;
   }
 
   /**
@@ -335,5 +341,6 @@ class DatabaseAPI {
     });
   }
 }
-
-module.exports = new DatabaseAPI();
+const database = new DatabaseAPI();
+Object.freeze(database);
+module.exports = database;
