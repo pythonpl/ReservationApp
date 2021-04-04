@@ -10,9 +10,10 @@ class Reservation {
     this.id = data.id;
     this.userID = data.userID;
     this.tickets = data.ticketID;
-    this.amount = data.amount;
-    this.datetime = new Date();
+    // DEFAULT VALUES
     this.paymentStatus = PAYMENT_STATUS.PENDING;
+    this.datetime = new Date();
+    this.amount = data.amount || 0;
   }
 
   /**
@@ -55,22 +56,6 @@ class Reservation {
     );
   }
 
-  /**
-   * This method sets payment status to PAYMENT_STATUS.STARTED
-   */
-  beginPayment() {
-    this.paymentStatus = PAYMENT_STATUS.STARTED;
-  }
-
-  /**
-   * @param {Boolean} status true if the payment ended with success, false otherwise
-   * This method sets payment status to PAYMENT_STATUS.SUCCESSFULL or PAYMENT_STATUS.FAILED
-   */
-  endPayment(status) {
-    this.paymentStatus = status
-      ? PAYMENT_STATUS.SUCCESSFULL
-      : PAYMENT_STATUS.FAILED;
-  }
 }
 
 module.exports = Reservation;

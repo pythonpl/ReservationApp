@@ -1,61 +1,23 @@
 const ERRORS = require("../constants/commonErrors");
 const PARAMS = require("../constants/params");
-const Ticket = require("./TicketClass");
-const Reservation = require("./ReservationClass");
-const MockUtils = require("./dbMockUtils");
+const PAYMENT_STATUS = require("../constants/PaymentStatusCodes");
+
 const { Mutex } = require("async-mutex");
+const databaseRequest = require("./dbMock");
 
 /**
- * Class Database
+ * Class DatabaseAPI
  * A primitive database mock to test the services
  */
 
-class Database {
-  /**
-   * TABLES: reservations, users, tickets
-   * With some example initial values for testing purposes
-   */
-  users = { _4a12pz: {}, _5s73fs: {} };
-
-  // Reservation table: each reservation belongs to user and contains array of ticketids
-  reservations = {
-    _4kwcny: new Reservation({
-      userID: "_4a12pz",
-      ticketID: ["_6c1iu1"],
-      amount: 15,
-      id: "_4kwcny",
-    }),
-  };
-
-  // We consider tickets as unique objects.
-  tickets = {
-    _j8w6y6: new Ticket({
-      price: 25,
-      reservationID: PARAMS.EMPTY_RESERVATION,
-      id: "_j8w6y6",
-    }),
-    _gd74ae: new Ticket({
-      price: 20,
-      reservationID: PARAMS.EMPTY_RESERVATION,
-      id: "_gd74ae",
-    }),
-    _6c1iu1: new Ticket({ price: 15, reservationID: "_4kwcny", id: "_6c1iu1" }),
-  };
-
+class DatabaseAPI {
   /**
    * Due to the lack of a real database and it's TRANSACTIONs, we need to use async-mutexes in order to be sure,
    * that double-booking problem won't exist, and the reservation under payment won't be released.
    */
   constructor() {
     this.reservationMutex = new Mutex();
-    this.changeReservationStatusMutex = new Mutex();
   }
-
-  /**
-   * DB METHODS
-   * ALL METHODS SHOULD RETURN PROMISE AS IN PROPER DB API
-   * These method can be modified to a real database connector if needed
-   */
 
   /**
    * Checks if user with provided userID is in the database
@@ -63,8 +25,8 @@ class Database {
    * @returns {Promise} resolves true if user exists, false if user does not exist
    */
   checkUserExistence(userID) {
-    return new Promise((resolve) => {
-      resolve(this.users.hasOwnProperty(userID));
+    return new Promise(async (resolve) => {
+      resolve((await databaseRequest.selectUser(userID)).length === 1);
     });
   }
 
@@ -74,8 +36,10 @@ class Database {
    * @returns {Promise} resolves true if reservation exists
    */
   checkReservationExistence(reservationID) {
-    return new Promise((resolve) => {
-      resolve(this.reservations.hasOwnProperty(reservationID));
+    return new Promise(async (resolve) => {
+      resolve(
+        (await databaseRequest.selectReservation(reservationID)).length === 1
+      );
     });
   }
 
@@ -85,8 +49,12 @@ class Database {
    * @returns {Promise} resolves true if it's not paid yet
    */
   checkIfReservationAwaitsPayment(reservationID) {
-    return new Promise((resolve) => {
-      resolve(this.reservations[reservationID].isWaitingForPayment());
+    return new Promise(async (resolve) => {
+      resolve(
+        (
+          await databaseRequest.selectReservation(reservationID)
+        )[0].isWaitingForPayment()
+      );
     });
   }
 
@@ -96,8 +64,8 @@ class Database {
    * @returns {Promise} resolves true if ticket exists, false if ticket does not exist
    */
   checkTicketExistence(ticketID) {
-    return new Promise((resolve) => {
-      resolve(this.tickets.hasOwnProperty(ticketID));
+    return new Promise(async (resolve) => {
+      resolve((await databaseRequest.selectTicket(ticketID)).length === 1);
     });
   }
 
@@ -109,7 +77,10 @@ class Database {
   checkReservationBelongsToUser(data) {
     return new Promise(async (resolve, reject) => {
       if (await this.checkReservationExistence(data.reservationID)) {
-        resolve(this.reservations[data.reservationID].userID === data.userID);
+        resolve(
+          (await databaseRequest.selectReservation(data.reservationID))[0]
+            .userID === data.userID
+        );
       } else {
         reject(new Error(ERRORS.ReservationDataInvalid));
       }
@@ -124,7 +95,10 @@ class Database {
   isTicketFree(ticketID) {
     return new Promise(async (resolve, reject) => {
       if (await this.checkTicketExistence(ticketID)) {
-        resolve(this.tickets[ticketID].reservationID === PARAMS.EMPTY_RESERVATION);
+        resolve(
+          (await databaseRequest.selectTicket(ticketID))[0].reservationID ===
+            PARAMS.EMPTY_RESERVATION
+        );
       } else {
         reject(new Error(ERRORS.TicketDataInvalid));
       }
@@ -138,19 +112,14 @@ class Database {
    * @returns {Promise} resolves price for all tickets
    */
   reserveTickets(tickets, id) {
-    return new Promise(async (resolve, reject) => {
-      let price = 0;
-      tickets.forEach((x) => {
-        this.tickets[x].setReservation(id);
-        price += this.tickets[x].price;
-      });
-      resolve(price);
+    return new Promise(async (resolve) => {
+      resolve(await databaseRequest.updateTicketsReservation(tickets, id));
     });
   }
 
   /**
    * Places new Reservation
-   * @param {Object} reservation matches PaymentRequestSchema
+   * @param {Object} reservation matches ReservationRequestSchema
    * @returns {Promise} resolves with price and reservationID if everything went good, rejects if there is a problem
    */
   placeReservation(data) {
@@ -160,17 +129,14 @@ class Database {
         const ticketsFree = await Promise.all(
           data.ticketID.map((x) => this.isTicketFree(x))
         );
+
         if (!ticketsFree.every((x) => x === true))
           throw new Error(ERRORS.TicketsAlreadyTaken);
 
-        const id = MockUtils.getUniqueID();
+        const id = await databaseRequest.insertReservation(data);
         const price = await this.reserveTickets(data.ticketID, id);
-        this.reservations[id] = new Reservation({
-          id: id,
-          userID: data.userID,
-          ticketID: data.ticketID,
-          amount: price,
-        });
+        await databaseRequest.updateReservationPrice(id, price);
+
         this.scheduleReservationExpiration(id);
 
         resolve({ id, price });
@@ -189,16 +155,21 @@ class Database {
    */
   beginPayment(data) {
     return new Promise(async (resolve, reject) => {
-      const release = await this.changeReservationStatusMutex.acquire();
+      const release = await this.reservationMutex.acquire();
       try {
-        if (this.reservations[data.reservationID].isLockedForThePayment())
+        const reservation = (
+          await databaseRequest.selectReservation(data.reservationID)
+        )[0];
+        if (reservation.isLockedForThePayment())
           throw new Error(ERRORS.PaymentStarted);
 
-        if (this.reservations[data.reservationID].isExpired())
-          throw new Error(ERRORS.ReservationExired);
+        if (reservation.isExpired()) throw new Error(ERRORS.ReservationExired);
 
-        this.reservations[data.reservationID].beginPayment();
-        resolve(this.reservations[data.reservationID].amount);
+        await databaseRequest.updateReservationPayment(
+          data.reservationID,
+          PAYMENT_STATUS.STARTED
+        );
+        resolve(reservation.amount);
       } catch (e) {
         reject(e);
       } finally {
@@ -215,9 +186,15 @@ class Database {
    */
   endPayment(data, success) {
     return new Promise(async (resolve, reject) => {
-      const release = await this.changeReservationStatusMutex.acquire();
+      const release = await this.reservationMutex.acquire();
       try {
-        this.reservations[data.reservationID].endPayment(success);
+        const status = success
+          ? PAYMENT_STATUS.SUCCESSFULL
+          : PAYMENT_STATUS.FAILED;
+        await databaseRequest.updateReservationPayment(
+          data.reservationID,
+          status
+        );
         resolve(true);
       } catch (e) {
         reject(e);
@@ -234,17 +211,22 @@ class Database {
    * @returns {Promise} resolves true if tickets that belong to the reservation were modified, false if reservation is still valid
    */
   updateReservationValidity(reservationID) {
-    return new Promise(async (resolve, reject) => {
-      if (!(await this.checkReservationExistence(reservationID)))
-        resolve(false);
-
-      const release = await this.changeReservationStatusMutex.acquire();
+    return new Promise(async (resolve) => {
+      const release = await this.reservationMutex.acquire();
       try {
-        if (!this.reservations[reservationID].canBeReleased()) resolve(false);
+        if (!(await this.checkReservationExistence(reservationID)))
+          resolve(false);
 
-        for (let ticket in this.reservations[reservationID].ticketID) {
-          this.tickets[ticket].setReservation(PARAMS.EMPTY_RESERVATION);
-        }
+        const reservation = (
+          await databaseRequest.selectReservation(reservationID)
+        )[0];
+
+        if (!reservation.canBeReleased()) resolve(false);
+
+        await databaseRequest.updateTicketsReservation(
+          reservation.tickets,
+          PARAMS.EMPTY_RESERVATION
+        );
         resolve(true);
       } finally {
         release();
@@ -257,23 +239,55 @@ class Database {
    * @returns {Promise} resolves array of free ticket ids
    */
   findFreeTickets() {
-    return new Promise(async (resolve, reject) => {
-      const freeTickets = Object.keys(this.tickets).filter((id) => {
-        if (this.tickets[id].reservationID === PARAMS.EMPTY_RESERVATION) return id;
-      });
-      resolve(freeTickets);
+    return new Promise(async (resolve) => {
+      resolve(await databaseRequest.selectFreeTickets());
     });
   }
 
   /**
    * Schedules function execution, that checks if reservation can be released
    * @param {String} reservationID
+   * @param {Integer} timeout value of timeout in miliseconds (default = PARAMS.RESERVATION_EXPIRY_TIME)
    */
-  scheduleReservationExpiration(reservationID) {
+  scheduleReservationExpiration(
+    reservationID,
+    timeout = PARAMS.RESERVATION_EXPIRY_TIME
+  ) {
     setTimeout(() => {
       this.updateReservationValidity(reservationID);
-    }, PARAMS.RESERVATION_EXPIRY_TIME);
+    }, timeout);
+  }
+
+  /**
+   * Cleanup of reservations in DB.
+   * Call this only at application startup!
+   * @returns {Promise<Object>} resolves ammount of reservations affected
+   */
+  onStartupReservationCleanup() {
+    return new Promise(async (resolve) => {
+      let release = await this.reservationMutex.acquire();
+      let expiredReservations = 0;
+      let scheduledReservations = [];
+      try {
+        expiredReservations = await databaseRequest.updateExpiredReservationTickets();
+        scheduledReservations = await databaseRequest.selectReservationsToScheduleExpiration();
+
+        scheduledReservations.forEach((r) => {
+          this.scheduleReservationExpiration(
+            r.id,
+            PARAMS.RESERVATION_EXPIRY_TIME - (new Date() - r.datetime)
+          );
+        });
+      } finally {
+        release();
+      }
+
+      resolve({
+        cleaned: expiredReservations,
+        scheduled: scheduledReservations.length,
+      });
+    });
   }
 }
 
-module.exports = new Database();
+module.exports = new DatabaseAPI();

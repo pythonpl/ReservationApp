@@ -1,6 +1,6 @@
 const verifyPaymentRequest = require("./PaymentRequestVerify");
 const PaymentGateway = require("./gateway/PaymentGateway");
-const ERRORS = require("../utils/commonErrors");
+const ERRORS = require("../constants/commonErrors");
 const db = require("../db/dbAPI");
 
 const express = require("express");
@@ -35,6 +35,7 @@ exports.beginPayment = async function (req, res, next) {
       token: res.locals.paymentRequest.token,
       currency: "EUR",
     };
+
     return next();
   } catch (e) {
     return res.json(e.message);
@@ -45,7 +46,6 @@ exports.chargePayment = async function (req, res, next) {
   try {
     res.locals.response = await PaymentGateway.charge(res.locals.paymentInfo);
     await db.endPayment(res.locals.paymentRequest, true);
-
     return next();
   } catch (e) {
     await db.endPayment(res.locals.paymentRequest, false);

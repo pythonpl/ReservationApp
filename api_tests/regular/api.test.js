@@ -1,7 +1,8 @@
 const app = require('../../app');
-
+const testRoutes = require('../testroute');
+app.use('/', testRoutes);
 const request = require('supertest');
-const ERRORS = require('../../utils/commonErrors');
+const ERRORS = require('../../constants/commonErrors');
 
 const URL = 'http://localhost:3700';
 
@@ -9,6 +10,7 @@ const URL = 'http://localhost:3700';
 afterEach(async () => {
     return await request(URL).get('/reset');   
 });
+
 
 describe('INTEGRATION TESTS POST /reserve', () => {
 
@@ -94,7 +96,7 @@ describe('INTEGRATION TESTS POST /pay', () => {
             expect(res.body).toHaveProperty('status', 'success');
         }).then(async ()=>{
             await request(URL).post(route).send(inputData).expect('Content-Type', /json/).expect(200).then((res) => {
-                expect(res.body).toBe(ERRORS.ReservationDataInvalid);
+                expect(res.body).toBe(ERRORS.RequestInvalidData);
             });
         });
 
