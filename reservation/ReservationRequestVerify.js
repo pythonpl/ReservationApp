@@ -1,6 +1,6 @@
 const validateSchema = require("./ReservationRequestSchema");
 const db = require("../db/dbAPI");
-const ERRORS = require("../utils/commonErrors");
+const ERRORS = require("../constants/commonErrors");
 
 /**
  * Verifies if the whole request has no syntax errors and doesn't request non-existing tickets/user

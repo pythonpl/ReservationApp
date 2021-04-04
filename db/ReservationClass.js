@@ -1,5 +1,5 @@
-const PAYMENT_STATUS = require("../utils/PaymentStatusCodes");
-const PARAMS = require("../utils/params");
+const PAYMENT_STATUS = require("../constants/PaymentStatusCodes");
+const PARAMS = require("../constants/params");
 
 /**
  * Reservation class. Stores data about reservation:

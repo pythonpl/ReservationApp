@@ -1,5 +1,5 @@
 const verifyReservationRequest = require("./ReservationRequestVerify");
-const ERRORS = require("../utils/commonErrors");
+const ERRORS = require("../constants/commonErrors");
 
 describe("Reservation Service request tests", () => {
   describe("Tests of verifyReservationRequest function", () => {

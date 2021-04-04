@@ -1,4 +1,4 @@
-const ERRORS = require("../../utils/commonErrors");
+const ERRORS = require("../../constants/commonErrors");
 const validate = require("./PaymentGatewaySchema");
 
 class PaymentGateway {

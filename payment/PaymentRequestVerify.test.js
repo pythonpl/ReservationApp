@@ -1,5 +1,5 @@
 const verifyPaymentRequest = require("./PaymentRequestVerify");
-const ERRORS = require("../utils/commonErrors");
+const ERRORS = require("../constants/commonErrors");
 
 describe("Payment request validation", () => {
   test("Should accept appropriate data", async () => {

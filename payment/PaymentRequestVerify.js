@@ -1,6 +1,6 @@
 const validateSchema = require("./PaymentRequestSchema");
 const db = require("../db/dbAPI");
-const ERRORS = require("../utils/commonErrors");
+const ERRORS = require("../constants/commonErrors");
 
 module.exports = function (data) {
   return new Promise(async (resolve, reject) => {

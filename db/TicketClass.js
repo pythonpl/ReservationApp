@@ -9,6 +9,10 @@ class Ticket {
         this.reservationID = data.reservationID;
     }
 
+    /**
+     * Assigns ticket to the reservation
+     * @param {String} reservationID
+     */
     setReservation(reservationID){
         this.reservationID = reservationID;
     }

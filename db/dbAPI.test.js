@@ -1,5 +1,5 @@
 const db = require("./dbAPI");
-const ERRORS = require("../utils/commonErrors");
+const ERRORS = require("../constants/commonErrors");
 
 describe("database API tests", () => {
   describe("tests of *Existence* methods", () => {

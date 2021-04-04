@@ -1,5 +1,5 @@
-const ERRORS = require("../utils/commonErrors");
-const PARAMS = require("../utils/params");
+const ERRORS = require("../constants/commonErrors");
+const PARAMS = require("../constants/params");
 const Ticket = require("./TicketClass");
 const Reservation = require("./ReservationClass");
 const MockUtils = require("./dbMockUtils");
@@ -54,7 +54,7 @@ class Database {
   /**
    * DB METHODS
    * ALL METHODS SHOULD RETURN PROMISE AS IN PROPER DB API
-   * These method can be replaced to a real database connector if needed
+   * These method can be modified to a real database connector if needed
    */
 
   /**

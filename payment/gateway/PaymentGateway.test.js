@@ -1,5 +1,5 @@
 const PaymentGateway = require("./PaymentGateway");
-const ERRORS = require("../../utils/commonErrors");
+const ERRORS = require("../../constants/commonErrors");
 
 describe("Payment Gateway tests", () => {
   test("Should decline the payment, and throw PaymentDeclined error", async () => {
