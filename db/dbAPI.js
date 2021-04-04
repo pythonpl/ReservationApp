@@ -11,7 +11,6 @@ const { Mutex } = require("async-mutex");
  */
 
 // Empty reservation ID - means the ticket with such number is so far free.
-const EMPTY_RESERVATION = "_000000";
 
 class Database {
   /**
@@ -34,18 +33,21 @@ class Database {
   tickets = {
     _j8w6y6: new Ticket({
       price: 25,
-      reservationID: EMPTY_RESERVATION,
+      reservationID: PARAMS.EMPTY_RESERVATION,
       id: "_j8w6y6",
     }),
     _gd74ae: new Ticket({
       price: 20,
-      reservationID: EMPTY_RESERVATION,
+      reservationID: PARAMS.EMPTY_RESERVATION,
       id: "_gd74ae",
     }),
     _6c1iu1: new Ticket({ price: 15, reservationID: "_4kwcny", id: "_6c1iu1" }),
   };
 
-
+  /**
+   * Due to the lack of a real database and it's TRANSACTIONs, we need to use async-mutexes in order to be sure,
+   * that double-booking problem won't exist, and the reservation under payment won't be released.
+   */
   constructor() {
     this.reservationMutex = new Mutex();
     this.changeReservationStatusMutex = new Mutex();
@@ -124,7 +126,7 @@ class Database {
   isTicketFree(ticketID) {
     return new Promise(async (resolve, reject) => {
       if (await this.checkTicketExistence(ticketID)) {
-        resolve(this.tickets[ticketID].reservationID === EMPTY_RESERVATION);
+        resolve(this.tickets[ticketID].reservationID === PARAMS.EMPTY_RESERVATION);
       } else {
         reject(new Error(ERRORS.TicketDataInvalid));
       }
@@ -243,7 +245,7 @@ class Database {
         if (!this.reservations[reservationID].canBeReleased()) resolve(false);
 
         for (let ticket in this.reservations[reservationID].ticketID) {
-          this.tickets[ticket].setReservation(EMPTY_RESERVATION);
+          this.tickets[ticket].setReservation(PARAMS.EMPTY_RESERVATION);
         }
         resolve(true);
       } finally {
@@ -259,7 +261,7 @@ class Database {
   findFreeTickets() {
     return new Promise(async (resolve, reject) => {
       const freeTickets = Object.keys(this.tickets).filter((id) => {
-        if (this.tickets[id].reservationID === EMPTY_RESERVATION) return id;
+        if (this.tickets[id].reservationID === PARAMS.EMPTY_RESERVATION) return id;
       });
       resolve(freeTickets);
     });
