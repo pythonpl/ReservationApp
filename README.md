@@ -26,13 +26,11 @@ Certain assumptions were made:
     * `POST /reserve` - to create reservation. Requests have to match ReservationRequestSchema. It responses with JSON: `{ id: "reservation id", price: "price to pay" }`, or with error.
     * `POST /pay` - to pay for the reservation. Requests have to match PaymentRequestSchema. It responses with JSON: `{ status: "success", price: "amount of money charged", currency : "currency" }` or with error.
 
-- We have also few routes for testing purposes that are enabled in API tests:
-    * `GET /reset` - resets the database to defaults (puts example data inside).
-    * `GET /insertMoreData` - inserts more data into database.
-
 - There is a schedule function that makes tickets in reservation if it is expired. Starting payment locks the reservation for the time of PaymentGateway response. If it fails, the reservation is released, if it succeeds tickets remain reserved.
 
 - In case of (for example) the unexpected application restart, at the startup runs a function `onStartupReservationCleanup()`, which releases the tickets if the time is up, or sets a schedule to release them after remaining time.
 
 # Summary
-I had a great time doing this project. I'm waiting for feedback and I'm open to a conversation.
+I had a great time doing this project. But it's Easter weekend, Sunday night, and I'm so tired ;) 
+Of course there should be much more tests, but I don't have strength anymore. Hope I showed enough.
+I'm waiting for feedback and I'm open to a conversation.
